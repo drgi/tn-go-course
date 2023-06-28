@@ -1,7 +1,7 @@
 package membot
 
 import (
-	"go-core-4/GoSearch/pkg/crawler"
+	"github.com/tn-go-course/go-search/pkg/crawler"
 )
 
 // Service - имитация служба поискового робота.

@@ -35,6 +35,7 @@ func main() {
 		docs, err := sp.Scan(url, deth)
 		if err != nil {
 			fmt.Println(err)
+			continue
 		}
 		documents = append(documents, docs...)
 	}

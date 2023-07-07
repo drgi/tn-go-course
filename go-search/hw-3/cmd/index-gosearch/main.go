@@ -10,8 +10,7 @@ import (
 )
 
 const (
-	searchQueryFlag = "s"
-	deth            = 2
+	depth = 2
 )
 
 var (
@@ -25,14 +24,14 @@ func main() {
 	var sp crawler.Interface
 	var query string
 
-	flag.StringVar(&query, searchQueryFlag, "", "input word for search")
+	flag.StringVar(&query, "s", "", "input word for search")
 	flag.Parse()
 
 	sp = spider.New()
-	idx := &index.Index{}
+	idx := index.New()
 
 	for _, url := range targetUrls {
-		docs, err := sp.Scan(url, deth)
+		docs, err := sp.Scan(url, depth)
 		if err != nil {
 			fmt.Println(err)
 			continue

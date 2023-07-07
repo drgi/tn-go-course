@@ -13,11 +13,14 @@ type Index struct {
 	list  []crawler.Document
 }
 
+func New() *Index {
+	i := &Index{}
+	i.index = make(map[string][]int)
+	return i
+}
+
 // Создает или добавляет документы в индекс и массив документов
 func (i *Index) Create(docs []crawler.Document) *Index {
-	if i.index == nil {
-		i.index = make(map[string][]int)
-	}
 	for _, d := range docs {
 		title := str.FilterString(d.Title)
 		d.ID = i.generateID()

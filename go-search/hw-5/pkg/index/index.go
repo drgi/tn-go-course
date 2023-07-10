@@ -1,6 +1,8 @@
 package index
 
 import (
+	"encoding/json"
+	"io"
 	"sort"
 	"strings"
 
@@ -78,6 +80,34 @@ func (i *Index) FindDoc(index int) crawler.Document {
 		}
 	}
 	return crawler.Document{}
+}
+
+// Метод записывает найденный массив в Writer
+// Идея в том что *Index сам запишет свои данные в Writer, тот что будет аргументом
+// Так же можно тут добавить и запись мапы с индексами но не стал усложнять
+func (i *Index) Store(w io.Writer) error {
+	b, err := json.Marshal(i.list)
+	if err != nil {
+		return err
+	}
+	w.Write(b)
+	return nil
+}
+
+// Метод читает данные из Reader и восстанавливает массив в память индекса
+// Идея в том что *Index сам прочитает данные из либого источника с интерфейсом Reader
+func (i *Index) Restore(r io.Reader) error {
+	b, err := io.ReadAll(r)
+	if err != nil {
+		return err
+	}
+	var list []crawler.Document
+	err = json.Unmarshal(b, &list)
+	if err != nil {
+		return err
+	}
+	i.Create(list)
+	return nil
 }
 
 // Выделил в отдельную ф-ю так как пробовал разную логику генерации числовых ИД, оставил простой вариант

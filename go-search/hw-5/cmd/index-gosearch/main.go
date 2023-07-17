@@ -31,12 +31,12 @@ func main() {
 
 	sp = spider.New()
 	idx := index.New()
-	restored, err := restoreFromFile(idx, cacheFileName)
+	err := restoreFromFile(idx, cacheFileName)
 	if err != nil {
 		fmt.Println("WARN:", "cache not restored", err)
 	}
 
-	if !restored {
+	if err != nil {
 		for _, url := range targetUrls {
 			docs, err := sp.Scan(url, depth)
 			if err != nil {
@@ -66,16 +66,16 @@ func main() {
 //     конечный результат, получилось восстановить или нет. Флаг добавил для читаемости if в main
 //  2. Возможно им место в пакете index, но мне показалось нет, так как нашему index дела до этого нет
 //     ему достаточно Reader и Writer)
-func restoreFromFile(idx *index.Index, fileName string) (bool, error) {
+func restoreFromFile(idx *index.Index, fileName string) error {
 	r, err := os.Open(fileName)
 	if err != nil {
-		return false, err
+		return err
 	}
 	err = idx.Restore(r)
 	if err != nil {
-		return false, err
+		return err
 	}
-	return true, nil
+	return nil
 }
 
 func storeToFile(idx *index.Index, fileName string) error {

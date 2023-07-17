@@ -34,9 +34,6 @@ func main() {
 	err := restoreFromFile(idx, cacheFileName)
 	if err != nil {
 		fmt.Println("WARN:", "cache not restored", err)
-	}
-
-	if err != nil {
 		for _, url := range targetUrls {
 			docs, err := sp.Scan(url, depth)
 			if err != nil {

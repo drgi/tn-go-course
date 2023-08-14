@@ -1,7 +1,8 @@
-package main
+package intface
 
 import (
 	"bytes"
+	"reflect"
 	"testing"
 )
 
@@ -65,5 +66,56 @@ func Test_printString(t *testing.T) {
 	want := "В GO нет магии !"
 	if got != want {
 		t.Errorf("printString() = %v, want %v", got, want)
+	}
+}
+
+func Test_maxAgePerson(t *testing.T) {
+	type args struct {
+		users []interface{}
+	}
+	tests := []struct {
+		name       string
+		args       args
+		wantResult interface{}
+	}{
+		{
+			name: "Test - 1, valid users",
+			args: args{users: []interface{}{
+				&Employee{
+					name:       "Иван",
+					lastName:   "Петров",
+					age:        25,
+					speciality: "frontEnd",
+				},
+				&Customer{
+					name:     "Петр",
+					lastName: "Иванов",
+					age:      37,
+				},
+				&Employee{
+					name:       "Федор",
+					lastName:   "Инженеров",
+					age:        25,
+					speciality: "backEnd",
+				},
+				&Customer{
+					name:     "Сергей",
+					lastName: "Иванов",
+					age:      60,
+				},
+			}},
+			wantResult: &Customer{
+				name:     "Сергей",
+				lastName: "Иванов",
+				age:      60,
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if gotResult := maxAgePerson(tt.args.users...); !reflect.DeepEqual(gotResult, tt.wantResult) {
+				t.Errorf("maxAgePerson() = %v, want %v", gotResult, tt.wantResult)
+			}
+		})
 	}
 }

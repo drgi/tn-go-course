@@ -1,9 +1,8 @@
-package main
+package intface
 
 import (
 	"fmt"
 	"io"
-	"os"
 )
 
 type User interface {
@@ -35,9 +34,26 @@ func (c *Customer) Age() uint {
 	return c.age
 }
 
-func main() {
-	args := []interface{}{"В", 1, " ", true, "GO", false, " ", 'r', "нет", []byte{}, " ", &Customer{}, "магии", map[string]interface{}{}, " ", [2]int{}, 3.14, "!"}
-	printString(os.Stdout, args...)
+// вызов функции в тесте
+func maxAgePerson(users ...interface{}) (result interface{}) {
+	var maxAge uint
+	for _, u := range users {
+		switch t := u.(type) {
+		case *Employee:
+			if t.age > maxAge {
+				maxAge = t.age
+				result = t
+			}
+		case *Customer:
+			if t.age > maxAge {
+				maxAge = t.age
+				result = t
+			}
+		default:
+			continue
+		}
+	}
+	return
 }
 
 // вызов функции в тесте
@@ -53,11 +69,8 @@ func maxAge(users ...User) (max uint) {
 
 func printString(w io.Writer, args ...interface{}) {
 	for _, v := range args {
-		switch t := v.(type) {
-		case string:
-			w.Write([]byte(t))
-		default:
-			continue
+		if s, ok := v.(string); ok {
+			w.Write([]byte(s))
 		}
 	}
 }

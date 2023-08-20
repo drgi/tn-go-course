@@ -16,16 +16,17 @@ func main() {
 	}
 	defer conn.Close()
 
-	close := make(chan bool, 1)
+	c := make(chan bool, 1)
 	querys := make(chan string)
 
-	go copyOutput(close, conn)
-	go readInput(close, querys)
+	go copyOutput(c, conn)
+	go readInput(c, querys)
 
 	for {
 		select {
-		case <-close:
+		case <-c:
 			fmt.Println("Connection closed")
+			close(querys)
 			return
 		case q := <-querys:
 			_, err := conn.Write([]byte(q))
@@ -43,13 +44,13 @@ func main() {
 	}
 }
 
-func readInput(close chan bool, queries chan string) {
+func readInput(c chan bool, queries chan string) {
 	for {
 		stdInReader := bufio.NewReader(os.Stdin)
 		query, _, err := stdInReader.ReadLine()
 		if err != nil {
 			fmt.Println("Read failed. Error: ", err)
-			close <- true
+			c <- true
 			return
 		}
 		queries <- string(query)

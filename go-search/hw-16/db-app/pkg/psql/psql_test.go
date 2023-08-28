@@ -32,7 +32,6 @@ func TestMain(m *testing.M) {
 		log.Fatalf("Could not connect to Docker: %s", err)
 	}
 
-	// pulls an image, creates a container based on it and runs it
 	resource, err := dockerPool.RunWithOptions(&dockertest.RunOptions{
 		Repository: "postgres",
 		Tag:        "11",
@@ -43,7 +42,6 @@ func TestMain(m *testing.M) {
 			"listen_addresses = '*'",
 		},
 	}, func(config *docker.HostConfig) {
-		// set AutoRemove to true so that stopped container goes away by itself
 		config.AutoRemove = true
 		config.RestartPolicy = docker.RestartPolicy{Name: "no"}
 	})

@@ -1,0 +1,17 @@
+syntax = "proto3";
+package protobuf;
+
+option go_package = "./messenger_proto";
+
+message Message {
+  int64 Id = 1;
+  string Text = 2;
+  int64 Ts = 3;
+}
+
+message Empty {}
+
+service Messanger {
+  rpc Messages(Empty) returns (stream Message) {}
+  rpc Send(Message) returns (Empty) {}
+}

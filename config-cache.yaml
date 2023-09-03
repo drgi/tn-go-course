@@ -1,0 +1,14 @@
+configuration:
+  app:
+    name: url_shortener_cache
+    version: 0.1
+  api:
+    port: 8081
+    host: localhost
+  log:
+    level: debug
+  redis:
+    host: localhost
+    port: 6379
+    password:
+    valueLifeTimeHours: 24

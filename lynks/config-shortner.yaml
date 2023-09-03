@@ -1,0 +1,19 @@
+configuration:
+  app:
+    name: url_shortener
+    version: 0.1
+  api:
+    port: 8080
+    host: localhost
+  log:
+    level: debug
+  postgresql:
+    host: postgres
+    port: 5432
+    user: postgres
+    password: postgres
+    dbName: url_shortener
+    SSL: false
+    SSLCertificatePath:
+  cache:
+    url: http://memcache:8081/store

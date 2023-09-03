@@ -1,0 +1,52 @@
+version: '3.8'
+services:
+  postgres:
+    image: postgres:14.1-alpine
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=url_shortener
+    volumes: 
+      - db:/var/lib/postgresql/data
+      - ./shortner/schema.sql:/docker-entrypoint-initdb.d/init.sql
+
+  shortner:
+    depends_on: 
+      - postgres
+    links:
+      - postgres  
+    container_name: short_url
+    restart: always
+    ports:
+      - '8080:8080'
+    build: 
+      dockerfile: ./Dockerfile
+      context: ./shortner
+    command: ./shortner
+    volumes:
+      - ./config-shortner.yaml:/go/bin/shortner/config-shortner.yaml 
+
+  memcache:
+    depends_on: 
+      - redis
+    links:
+      - redis  
+    container_name: short_url_cache
+    restart: always
+    ports:
+      - '8081:8081'
+    build: 
+      dockerfile: ./Dockerfile
+      context: ./memcache
+    command: ./memcache
+    volumes:
+      - ./config-memcache.yaml:/go/bin/memcache/config-memcache.yaml         
+
+  redis:
+    image: 'redis:latest'
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes  
+volumes:
+  db:
+    driver: local

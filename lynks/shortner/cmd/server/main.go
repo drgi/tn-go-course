@@ -8,11 +8,12 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/pkgerrors"
-	"github.com/tn-go-course/lynks/shortner/config"
 	"github.com/tn-go-course/lynks/shortner/internal/app"
+	"github.com/tn-go-course/lynks/shortner/internal/config"
 	"github.com/tn-go-course/lynks/shortner/internal/repo"
 	"github.com/tn-go-course/lynks/shortner/internal/srv/api"
 	"github.com/tn-go-course/lynks/shortner/pkg/cache/http"
+	"github.com/tn-go-course/lynks/shortner/pkg/metric"
 	"github.com/tn-go-course/lynks/shortner/pkg/postgres"
 )
 
@@ -45,7 +46,8 @@ func main() {
 	repo := repo.New(db, &logger)
 
 	app := app.New(repo, c, &logger)
-	api := api.New(app, mux.NewRouter(), &logger)
+	metric := metric.New()
+	api := api.New(app, mux.NewRouter(), metric, &logger)
 	api.RegisterHandlers()
 
 	logger.Info().Str("host", cfg.Api.Host).Int("port", cfg.Api.Port).Msg("App listen")

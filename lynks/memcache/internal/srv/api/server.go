@@ -5,18 +5,18 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/rs/zerolog"
-	"github.com/tn-go-course/lynks/memcache/internal/app"
+	"github.com/tn-go-course/lynks/memcache/pkg/cache"
 )
 
 type Api struct {
-	app    *app.App
+	cache  cache.Storage
 	router *mux.Router
 	logger *zerolog.Logger
 }
 
-func New(app *app.App, router *mux.Router, logger *zerolog.Logger) *Api {
+func New(cache cache.Storage, router *mux.Router, logger *zerolog.Logger) *Api {
 	l := logger.With().Str("pkg", "api").Logger()
-	return &Api{app, router, &l}
+	return &Api{cache, router, &l}
 }
 
 func (a *Api) RegisterHandlers() {

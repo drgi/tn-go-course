@@ -15,6 +15,7 @@ import (
 const (
 	requestIdContextKey = "reqId"
 	requestTsKey        = "requestTs"
+	requestUrlKey       = "requestUrl"
 	requestTimeout      = 20
 )
 
@@ -28,6 +29,7 @@ func (a *Api) setRequestIdAndTs(next http.Handler) http.Handler {
 		ts := time.Now().Unix()
 		ctx := context.WithValue(r.Context(), requestIdContextKey, reqId)
 		ctx = context.WithValue(ctx, requestTsKey, ts)
+		ctx = context.WithValue(ctx, requestUrlKey, r.URL.Path)
 		ctx = a.logger.With().Int("requestId", reqId).Int64("reqTs", ts).Logger().WithContext(ctx)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
@@ -52,7 +54,7 @@ func (a *Api) setTimeoutAndRecovery(next http.Handler) http.Handler {
 			if r := recover(); r != nil {
 				fmt.Println("stacktrace from panic: \n" + string(debug.Stack()))
 				a.logger.Error().Caller().Stack().Msg("internal error")
-				returnError(ctx, http.StatusInternalServerError, errInternal, w)
+				a.returnError(ctx, http.StatusInternalServerError, errInternal, w)
 			}
 		}()
 		next.ServeHTTP(w, r)

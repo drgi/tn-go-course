@@ -12,36 +12,35 @@ func (a *Api) GetShortURL(w http.ResponseWriter, r *http.Request) {
 	u := &models.Url{}
 	err := json.NewDecoder(r.Body).Decode(&u)
 	if err != nil {
-		returnError(r.Context(), http.StatusBadRequest, err, w)
+		a.returnError(r.Context(), http.StatusBadRequest, err, w)
 		return
 	}
 
 	u, err = a.app.CreateShortLink(r.Context(), u.Url)
 	if err != nil {
-		returnError(r.Context(), http.StatusBadRequest, err, w)
+		a.returnError(r.Context(), http.StatusBadRequest, err, w)
 		return
 	}
-
-	returnData(r.Context(), u, w)
+	a.returnData(r.Context(), u, w)
 }
 
 func (a *Api) GetURL(w http.ResponseWriter, r *http.Request) {
 	id := mux.Vars(r)["id"]
 	u, err := a.app.RestoreLink(r.Context(), id)
 	if err != nil {
-		returnError(r.Context(), http.StatusBadRequest, err, w)
+		a.returnError(r.Context(), http.StatusBadRequest, err, w)
 		return
 	}
-	returnData(r.Context(), u, w)
+	a.returnData(r.Context(), u, w)
 }
 
 func (a *Api) Redirect(w http.ResponseWriter, r *http.Request) {
 	id := mux.Vars(r)["id"]
 	destinationUrl, err := a.app.RestoreLink(r.Context(), id)
 	if err != nil {
-		returnError(r.Context(), http.StatusBadRequest, err, w)
+		a.returnError(r.Context(), http.StatusBadRequest, err, w)
 		return
 	}
 
-	returnRedirect(w, r, destinationUrl.Url)
+	a.returnRedirect(w, r, destinationUrl.Url)
 }

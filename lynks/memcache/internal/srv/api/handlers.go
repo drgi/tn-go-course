@@ -16,7 +16,7 @@ func (a *Api) StoreURL(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	el, err = a.app.StoreUrl(r.Context(), el)
+	err = a.cache.SetString(r.Context(), el.Key, el.Value)
 	if err != nil {
 		returnError(r.Context(), http.StatusBadRequest, err, w)
 		return
@@ -27,7 +27,7 @@ func (a *Api) StoreURL(w http.ResponseWriter, r *http.Request) {
 
 func (a *Api) GetURL(w http.ResponseWriter, r *http.Request) {
 	id := mux.Vars(r)["id"]
-	u, err := a.app.GetUrl(r.Context(), id)
+	u, err := a.cache.GetString(r.Context(), id)
 	if err != nil {
 		returnError(r.Context(), http.StatusBadRequest, err, w)
 		return

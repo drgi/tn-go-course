@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"math/rand"
+	"sync"
 	"time"
 )
 
@@ -11,62 +12,28 @@ const (
 )
 
 type Game struct {
-	currentPlayerIndex int
-	current            *Player
-	players            [2]*Player
-	table              chan string
+	wg      *sync.WaitGroup
+	players [2]*Player
+	table   chan string
 }
 
 func NewGame(players [2]*Player) *Game {
-	return &Game{players: players, table: make(chan string)}
+	return &Game{wg: new(sync.WaitGroup), players: players, table: make(chan string)}
 }
 
 func (g *Game) Play() {
-	for v := range g.table {
-		// начало игры выбор рандомного игрока
-		if v == "start" {
-			g.currentPlayerIndex = g.randomPlayerIndex()
-		}
-		currentPlayer := g.players[g.currentPlayerIndex]
-
-		// удар игрока который ходит в текущий момент
-		go func() {
-			currentPlayer.bey(g.table)
-
-			// получает ли игрок очко?
-			if point() {
-				currentPlayer.IncrementGoal()
-				fmt.Println("Goal from: ", currentPlayer.name, currentPlayer.goals)
-			}
-
-			// было ли очко победным?
-			if currentPlayer.IsWinner() {
-				g.stopGame()
-				return
-			}
-		}()
-		g.switchPlayer()
-	}
+	g.wg.Add(2)
+	go g.players[0].play(g.table, g.wg, g.stopGame)
+	go g.players[1].play(g.table, g.wg, g.stopGame)
+	g.table <- "begin"
+	g.wg.Wait()
 }
 
-func (g *Game) randomPlayerIndex() int {
-	rand.Seed(time.Now().UnixNano())
-	return rand.Intn(1)
-}
-
-func (g *Game) stopGame() {
+func (g *Game) stopGame(winner *Player) {
 	close(g.table)
 	fmt.Println(
-		"Победа игрока: ", g.players[g.currentPlayerIndex].name,
+		"Победа игрока: ", winner.name,
 		"Со счетом: ", g.players[0].goals, g.players[1].goals)
-}
-
-func (g *Game) switchPlayer() {
-	if g.currentPlayerIndex == 0 {
-		g.currentPlayerIndex = 1
-	} else if g.currentPlayerIndex == 1 {
-		g.currentPlayerIndex = 0
-	}
 }
 
 type Player struct {
@@ -75,17 +42,46 @@ type Player struct {
 	goals int
 }
 
-func (p *Player) IncrementGoal() {
+func (p *Player) incrementGoal() {
 	p.goals++
 }
 
-func (p *Player) IsWinner() bool {
+func (p *Player) isWinner() bool {
 	return p.goals == maxScore
 }
 
-func (p *Player) bey(table chan string) {
-	fmt.Println("Удар от игрока: ", p.name, p.hod)
-	table <- p.hod
+func (p *Player) bey(table chan string, hit string) {
+	table <- hit
+}
+
+func (p *Player) play(table chan string, wg *sync.WaitGroup, stop func(*Player)) {
+	defer wg.Done()
+	for v := range table {
+		var hit string
+		// выбор первого удара
+		switch v {
+		case "begin", "pong", "stop":
+			hit = "ping"
+		case "ping":
+			hit = "pong"
+		}
+		fmt.Println("Удар от игрока: ", p.name, hit)
+		// получает ли игрок очко?
+		if point() {
+			p.incrementGoal()
+			fmt.Printf("Игрок: %s, получает %v очко!\n", p.name, p.goals)
+			// было ли очко победным?
+			if p.isWinner() {
+				stop(p)
+				return
+			}
+			table <- "stop"
+		} else {
+			// удар игрока который ходит в текущий момент
+			p.bey(table, hit)
+		}
+
+	}
 }
 
 func main() {
@@ -94,13 +90,11 @@ func main() {
 	players := [2]*Player{p1, p2}
 
 	game := NewGame(players)
-	go func() {
-		game.table <- "start"
-	}()
 	game.Play()
 
 }
 
 func point() bool {
-	return rand.Intn(5) == 4
+	rand.Seed(time.Now().UnixNano())
+	return rand.Intn(5) == 3
 }
